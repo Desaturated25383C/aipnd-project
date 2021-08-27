@@ -62,13 +62,13 @@ model = models.vgg16(pretrained=True)
 for param in model.parameters():
     param.require_grad = False
     
-model.classifier = nn.Sequential(nn.Linear(25088, 4096),
+model.classifier = nn.Sequential(nn.Linear(25088, 512),
                                  nn.ReLU(),
                                  nn.Dropout(0.2),
-                                 nn.Linear(4096, 4096),
-                                 nn.ReLU(),
-                                 nn.Dropout(0.2),
-                                 nn.Linear(4096, 1000),
+                                 #nn.Linear(4096, 4096),
+                                 #nn.ReLU(),
+                                 #nn.Dropout(0.2),
+                                 nn.Linear(512, 102),
                                  nn.LogSoftmax(dim=1))
 
 
@@ -134,3 +134,13 @@ with active_session():
             model.train()
             
             
+# TODO: Save the checkpoint 
+model.class_to_idx = train_data['train'].class_to_idx
+
+checkpoint = {'input_size': 25088,
+              'output_size': 102,
+              'hidden_layers': [each.out_features for each in model.hidden_layers],
+              'state_dict': model.class_to_idx()}
+
+
+torch.save(checkpoint, model.class_to_idx)
