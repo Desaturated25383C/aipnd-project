@@ -135,7 +135,7 @@ with active_session():
             
             
 # TODO: Save the checkpoint 
-model.class_to_idx = train_data['train'].class_to_idx
+model.class_to_idx = train_data.class_to_idx
 
 checkpoint = {'input_size': 25088,
               'output_size': 102,
