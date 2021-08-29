@@ -145,4 +145,3 @@ checkpoint = {'input_size': 25088,
 
 torch.save(checkpoint, model.class_to_idx)
 
-model.classifier = checkpoint['classifier']
