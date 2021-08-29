@@ -139,8 +139,10 @@ model.class_to_idx = train_data.class_to_idx
 
 checkpoint = {'input_size': 25088,
               'output_size': 102,
-              'hidden_layers': [each.out_features for each in model.hidden_layers],
+              'classifier' : model.classifier,
               'state_dict': model.class_to_idx()}
 
 
 torch.save(checkpoint, model.class_to_idx)
+
+model.classifier = checkpoint['classifier']
