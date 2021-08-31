@@ -143,5 +143,14 @@ checkpoint = {'input_size': 25088,
               'state_dict': model.class_to_idx}
 
 
-torch.save(checkpoint, model.class_to_idx)
+torch.save(checkpoint,'checkpoint.pth')
 
+# TODO: Write a function that loads a checkpoint and rebuilds the model
+def load_checkpoint(filepath):
+    checkpoint = torch.load(filepath)
+    model = fc_model.Network(checkpoint['input_size'],
+                             checkpoint['output_size'],
+                             checkpoint['classifier'])
+    model.load_state_dict(checkpoint['state_dict'])
+    
+    return model
