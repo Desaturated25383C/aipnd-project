@@ -154,3 +154,34 @@ def load_checkpoint(filepath):
     model.load_state_dict(checkpoint['state_dict'])
     
     return model
+  
+  
+ # TODO: Process a PIL image for use in a PyTorch model 
+from PIL import Image
+import glob, os
+
+def process_image(image):
+    ''' Scales, crops, and normalizes a PIL image for a PyTorch model,
+        returns an Numpy array
+    '''
+    
+    size = 256
+    means = np.array([0.485, 0.456, 0.406])
+    standard_deviation = np.array([0.229, 0.224, 0.225])
+    
+    for image in imageFolder(imageloader):
+        ## Create thumbnail, resize images
+        for infile in glob.glob("*.jpg"):
+        file, ext = os.path.splitext(infile)
+        with Image.open(infile) as im:
+            im.thumbnail(size)
+            im.save(file + ".thumbnail", "JPEG")
+            
+            ## Crop out image
+            im_crop = im.crop(224, 224, 224, 224)
+            
+            ## Colour channel Value conversion to numby array
+            np_image = np.array(pil_image)
+            np_image = (np_image - means)/standard_deviation
+            
+            image = image.numpy().transpose((1, 2, 0))
