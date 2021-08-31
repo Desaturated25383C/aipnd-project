@@ -172,16 +172,16 @@ def process_image(image):
     for image in imageFolder(imageloader):
         ## Create thumbnail, resize images
         for infile in glob.glob("*.jpg"):
-        file, ext = os.path.splitext(infile)
-        with Image.open(infile) as im:
-            im.thumbnail(size)
-            im.save(file + ".thumbnail", "JPEG")
-            
-            ## Crop out image
-            im_crop = im.crop(224, 224, 224, 224)
-            
-            ## Colour channel Value conversion to numby array
-            np_image = np.array(pil_image)
-            np_image = (np_image - means)/standard_deviation
-            
-            image = image.numpy().transpose((1, 2, 0))
+            file, ext = os.path.splitext(infile)
+            with Image.open(infile) as im:
+                im.thumbnail(size)
+                im.save(file + ".thumbnail", "JPEG")
+
+                ## Crop out image
+                im_crop = im.crop(224, 224, 224, 224)
+
+                ## Colour channel Value conversion to numby array
+                np_image = np.array(pil_image)
+                np_image = (np_image - means)/standard_deviation
+
+                image = image.numpy().transpose((1, 2, 0))
