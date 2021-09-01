@@ -231,7 +231,8 @@ def process_image(image):
     with torch.no_grad():
     # Implement the code to predict the class from an image file    
         # Processs the image
-        image = process_image(image_path)
+        image = Image.open(image_path)
+        image = process_image(image)
 
         # We need a tensor for the model so change the image to a np.Array and then a tensor
         image = torch.from_numpy(np.array([image])).float()
