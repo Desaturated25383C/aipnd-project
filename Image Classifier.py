@@ -165,23 +165,132 @@ def process_image(image):
         returns an Numpy array
     '''
     
-    size = 256
-    means = np.array([0.485, 0.456, 0.406])
-    standard_deviation = np.array([0.229, 0.224, 0.225])
+    size = 256, 256
+    image.thumbnail(size, Image.ANTIALIAS)
+    image = image.crop((
+        size[0]//2 - 112,
+        size[1]//2 - 112,
+        size[0]//2 + 112,
+        size[1]//2 + 112)
+    )
+    np_image = np.array(image)
+    #Scale Image per channel
+    # Using (image-min)/(max-min)
+    np_image = np_image/255.
+        
+    img_a = np_image[:,:,0]
+    img_b = np_image[:,:,1]
+    img_c = np_image[:,:,2]
     
-    for image in imageFolder(imageloader):
-        ## Create thumbnail, resize images
-        for infile in glob.glob("*.jpg"):
-            file, ext = os.path.splitext(infile)
-            with Image.open(infile) as im:
-                im.thumbnail(size)
-                im.save(file + ".thumbnail", "JPEG")
+    # Normalize image per channel
+    img_a = (img_a - 0.485)/(0.229) 
+    img_b = (img_b - 0.456)/(0.224)
+    img_c = (img_c - 0.406)/(0.225)
+        
+    np_image[:,:,0] = img_a
+    np_image[:,:,1] = img_b
+    np_image[:,:,2] = img_c
+    
+    # Transpose image
+    np_image = np.transpose(np_image, (2,0,1))
+    return np_image
+  
+  def imshow(image, ax=None, title=None):
+    """Imshow for Tensor."""
+    if ax is None:
+        fig, ax = plt.subplots()
+    
+    # PyTorch tensors assume the color channel is the first dimension
+    # but matplotlib assumes is the third dimension
+    image = image.numpy().transpose((1, 2, 0))
+    
+    # Undo preprocessing
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
+    image = std * image + mean
+    
+    # Image needs to be clipped between 0 and 1 or it looks like noise when displayed
+    image = np.clip(image, 0, 1)
+    
+    ax.imshow(image)
+    
+    return ax
+  
+  def predict(image_path, model, topk=5):
+    ''' Predict the class (or classes) of an image using a trained deep learning model.
+    '''
+    
+    # TODO: Implement the code to predict the class from an image file
+    # Use the GPU if its available
+    #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to('cpu')
+    
+    #Switch the model to evaluation mode to turn off dropout
+    model.eval()
+    
+    with torch.no_grad():
+    # Implement the code to predict the class from an image file    
+        # Processs the image
+        image = process_image(image_path)
 
-                ## Crop out image
-                im_crop = im.crop(224, 224, 224, 224)
+        # We need a tensor for the model so change the image to a np.Array and then a tensor
+        image = torch.from_numpy(np.array([image])).float()
+        image.to('cpu')
 
-                ## Colour channel Value conversion to numby array
-                np_image = np.array(pil_image)
-                np_image = (np_image - means)/standard_deviation
+        # Use the model to make a prediction
+        logps = model(image)
+        ps = torch.exp(logps)
 
-                image = image.numpy().transpose((1, 2, 0))
+        # Get the top 5 probabilities and classes. This is returned as a tenosr of lists
+        p, classes = ps.topk(topk, dim=1)
+
+        # Switch the model back to training mode
+        #model.train()
+        
+        # Get the first items in the tensor list to get the list of probs and classes
+        top_p = p.tolist()[0]
+        top_classes = classes.tolist()[0]
+        
+        # Reverse the categories dictionary
+        idx_to_class = {v:k for k, v in model.class_to_idx.items()}
+        
+        # Get the lables from the json file
+        labels = []
+        for c in top_classes:
+            labels.append(cat_to_name[idx_to_class[c]])
+    
+        return top_p, labels
+    
+    # TODO: Display an image along with the top 5 classes
+# Display an image along with the top 5 classes
+# Create a plot that will have the image and the bar graph
+fig = plt.figure(figsize = [10,5])
+
+# Create the axes for the flower image 
+ax = fig.add_axes([.5, .4, .5, .5])
+
+# Process the image and show it
+result = process_image('flowers/test/77/image_00005.jpg')
+ax = imshow(result, ax)
+ax.axis('off')
+index = 77
+
+ax.set_title(cat_to_name[str(index)])
+
+
+# Make a prediction on the image
+predictions, classes = predict('flowers/test/77/image_00005.jpg', model)
+
+
+# Make a bar graph
+# Create the axes for the bar graph
+ax1 = fig.add_axes([0, -.5, .775, .775])
+
+# Get the range for the probabilities
+y_pos = np.arange(len(classes))
+
+# Plot as a horizontal bar graph
+plt.barh(y_pos, predictions, align='center', alpha=0.5)
+plt.yticks(y_pos, classes)
+plt.xlabel('probabilities')
+plt.show()
