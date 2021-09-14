@@ -14,7 +14,6 @@ from PIL import Image
 import io
 import pathlib
 
-from workspace_utils import active_session
 
 data_dir = 'flowers'
 train_dir = data_dir + '/train'
@@ -78,60 +77,59 @@ optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
 model.to(device)
 
 # TODO: Do validation on the test set
-with active_session():
-    epochs = 4
-    steps = 0
+epochs = 1
+steps = 0
     
-    train_losses, test_losses = [], []
+  train_losses, test_losses = [], []
     
-    for e in range(epochs):
-        running_loss = 0
+  for e in range(epochs):
+      running_loss = 0
         
-        for images, labels in trainloader:
-            steps += 1
-            images, labels = images.to(device), labels.to(device)
+      for images, labels in trainloader:
+          steps += 1
+          images, labels = images.to(device), labels.to(device)
             
-            optimizer.zero_grad()
+          optimizer.zero_grad()
             
-            logps = model.forward(images)
-            loss = criterion(logps, labels)
-            loss.backward()
-            optimizer.step()
+          logps = model.forward(images)
+          loss = criterion(logps, labels)
+          loss.backward()
+          optimizer.step()
             
-            running_loss += loss.item()
+          running_loss += loss.item()
         
-        else:
-            test_loss = 0
-            accuracy = 0
+      else:
+          test_loss = 0
+          accuracy = 0
             
-            # Turn off gradients for validation
-            with torch.no_grad():
+          # Turn off gradients for validation
+          with torch.no_grad():
                 
-                # set model to evaluation mode 
-                model.eval()
+              # set model to evaluation mode 
+              model.eval()
                 
-                # validation pass
-                for images, labels in testloader:
-                    images, labels = images.to(device), labels.to(device)
-                    logps = model.forward(images)
-                    test_loss += criterion(logps, labels)
+              # validation pass
+              for images, labels in testloader:
+                  images, labels = images.to(device), labels.to(device)
+                  logps = model.forward(images)
+                  test_loss += criterion(logps, labels)
                     
                     
-                    ps = torch.exp(logps)
-                    top_p, top_class = ps.topk(1, dim=1)
-                    equals = top_class == labels.view(*top_class.shape)
-                    accuracy += torch.mean(equals.type(torch.FloatTensor)).item()
+                  ps = torch.exp(logps)
+                  top_p, top_class = ps.topk(1, dim=1)
+                  equals = top_class == labels.view(*top_class.shape)
+                  accuracy += torch.mean(equals.type(torch.FloatTensor)).item()
             
-            train_losses.append(running_loss/len(trainloader))
-            test_losses.append(test_loss/len(testloader))
+          train_losses.append(running_loss/len(trainloader))
+          test_losses.append(test_loss/len(testloader))
             
-            print("Epoch: {}/{}.. ".format(e+1, epochs),
-                  "Training Loss: {:.3f}.. ".format(running_loss/len(trainloader)),
-                  "Test Loss: {:.3f}.. ".format(test_loss/len(testloader)),
-                  "Test Accuracy: {:.3f}".format(accuracy/len(testloader)))
+          print("Epoch: {}/{}.. ".format(e+1, epochs),
+                 "Training Loss: {:.3f}.. ".format(running_loss/len(trainloader)),
+                 "Test Loss: {:.3f}.. ".format(test_loss/len(testloader)),
+                 "Test Accuracy: {:.3f}".format(accuracy/len(testloader)))
             
-            # set model back to train mode
-            model.train()
+          # set model back to train mode
+          model.train()
             
             
 # TODO: Save the checkpoint 
