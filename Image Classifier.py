@@ -165,6 +165,7 @@ def process_image(image):
         returns an Numpy array
     '''
     
+    image = Image.open(image_path)
     size = 256, 256
     image.thumbnail(size, Image.ANTIALIAS)
     image = image.crop((
