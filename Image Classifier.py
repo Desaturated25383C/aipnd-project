@@ -160,7 +160,7 @@ def load_checkpoint(filepath):
 from PIL import Image
 import glob, os
 
-def process_image(image):
+def process_image(image_path):
     ''' Scales, crops, and normalizes a PIL image for a PyTorch model,
         returns an Numpy array
     '''
