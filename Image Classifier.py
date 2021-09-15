@@ -14,6 +14,7 @@ from PIL import Image
 import io
 import pathlib
 
+import numpy as np
 
 data_dir = 'flowers'
 train_dir = data_dir + '/train'
